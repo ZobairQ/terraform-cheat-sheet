@@ -47,6 +47,67 @@ resource "local_file" "important_file" {
     }
 }
 
+resource "local_file" "several_outputs" {
+  filename = "several_output.txt"
+  content = "There will be a 3 copies of this on top of each other"
+  count = 3
+}
+
+# The proper use of count
+variable "filenames" {
+    default = [
+        "/root/dog.txt",
+        "/root/cat.txt",
+        "/pet.txt"
+    ]
+}
+// length is a built in function that returns the length of the array.
+resource "local_file" "several_outputs" {
+  filename = var.filenames[count.index]
+  content = "There will be a 3 copies of this on top of each other"
+  count = length(var.filenames)
+}
+
+
+# For each
+
+variable "filenames" {
+    type = list(string)
+    default = [
+        "/root/dog.txt",
+        "/root/cat.txt",
+        "/pet.txt"
+    ]
+}
+
+variable "filename_set" {
+    type = set(string)
+    default = [
+        "/root/dog.txt",
+        "/root/cat.txt",
+        "/pet.txt"
+    ]
+}
+// for_each only works with set and maps. filenames is list of strings. 
+
+# DOES NOT WORK!
+resource "local_file" "several_outputs" {
+  filename = each.value
+  for_each = var.filenames
+}
+
+# DOES WORK
+
+# This works because filename_set is a set.
+resource "local_file" "several_outputs" {
+  filename = each.value
+  for_each = var.filename_set
+}
+# You either need to use set or another builin function toset to convert list to set
+resource "local_file" "several_outputs" {
+  filename = each.value
+  for_each = toset(var.filenames)
+}
 # Output 
 variable "name" {
   type        = string
